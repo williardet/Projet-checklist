@@ -1,4 +1,3 @@
-
 const params = new URLSearchParams(window.location.search);
 const checklistId = params.get("checklistId");
 const storageKey = `tasks-${checklistId}`;
