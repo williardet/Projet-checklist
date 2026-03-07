@@ -1,33 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <title>Checklists</title>
+  <style>
+    .active-link {
+      background-color: rgba(255, 255, 255, 0.15);
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body class="bg-white">
   <div class="flex h-screen">
-    <!-- Sidebar -->
     <aside class="w-1/6 bg-blue-900 text-white flex flex-col justify-between shadow-md">
       <div>
         <div class="h-14 flex items-center px-4 bg-blue-800 shadow-md">
           <div class="w-8 h-8 bg-white rounded-lg mr-2"></div>
           <h2 class="text-xl font-bold">Check-<span class="text-sm">List</span></h2>
         </div>
+
         <nav class="mt-4 space-y-2 px-4">
-          <a href="#" class="block">My checklists</a>
-          <a href="#" class="block">Importants</a>
-          <a href="#" class="block">Favorites</a>
-          <a href="#" class="block">Done</a>
+          <a id="filter-all" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer active-link">
+            My checklists
+          </a>
+          <a id="filter-important" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer">
+            Importants
+          </a>
+          <a id="filter-favorite" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer">
+            Favorites
+          </a>
+          <a id="filter-done" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer">
+            Done
+          </a>
         </nav>
       </div>
+
       <div class="h-11 px-4 bg-blue-800 flex items-center">
         <h4><u>Total checklist</u>: <span id="totalCount">00</span></h4>
       </div>
     </aside>
 
-    <!-- Main content -->
     <main class="w-5/6 p-6">
       <form id="addForm" class="flex space-x-4 mb-6">
         <input type="text" id="titleInput" placeholder="Title" class="w-1/4 p-2 border rounded" />
@@ -40,6 +56,7 @@
         <thead>
           <tr class="bg-gray-100">
             <th class="text-left p-2">Checklist</th>
+            <th class="w-10"></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -49,4 +66,5 @@
 
   <script src="js/script.js"></script>
 </body>
+
 </html>
