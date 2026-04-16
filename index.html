@@ -1,67 +1,199 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="images/checklist.png" type="image/x-icon">
   <title>Checklists</title>
   <style>
     .active-link {
       background-color: rgba(255, 255, 255, 0.15);
       font-weight: bold;
     }
+
+    /* Masque la barre de scroll tout en conservant le deplacement au scroll. */
+    .scrollbar-hidden {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* La zone du tableau scrolle sans faire bouger la page principale. */
+    .table-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    /* Le tableau est separe en deux parties pour garder l'en-tete fixe. */
+    .table-shell {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .table-fixed {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    /* Arrondir les coins en haut des tableaux */
+    table thead tr th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    table thead tr th:last-child {
+      border-top-right-radius: 12px;
+    }
   </style>
 </head>
 
-<body class="bg-white">
-  <div class="flex h-screen">
-    <aside class="w-1/6 bg-blue-900 text-white flex flex-col justify-between shadow-md">
+<body class="h-screen overflow-hidden bg-white">
+  <div class="flex h-full overflow-hidden">
+    <aside class="flex h-full w-1/6 shrink-0 flex-col justify-between bg-blue-900 text-white shadow-md">
       <div>
-        <div class="h-14 flex items-center px-4 bg-blue-800 shadow-md">
-          <div class="w-8 h-8 bg-white rounded-lg mr-2"></div>
+        <div class="flex h-14 items-center bg-blue-800 px-4 shadow-md">
+          <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h11"></path>
+            </svg>
+          </div>
           <h2 class="text-xl font-bold">Check-<span class="text-sm">List</span></h2>
         </div>
 
-        <nav class="mt-4 space-y-2 px-4">
-          <a id="filter-all" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer active-link">
-            My checklists
+        <nav class="mt-4 space-y-2 tracking-wide">
+          <a id="filter-all" class="active-link block cursor-pointer px-4 py-2 hover:bg-blue-800">
+            Mes checklists
           </a>
-          <a id="filter-important" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer">
+          <a id="filter-important" class="block cursor-pointer px-4 py-2 hover:bg-blue-800">
             Importants
           </a>
-          <a id="filter-favorite" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer">
-            Favorites
+          <a id="filter-favorite" class="block cursor-pointer px-4 py-2 hover:bg-blue-800">
+            Favoris
           </a>
-          <a id="filter-done" class="block py-2 px-2 rounded hover:bg-blue-800 cursor-pointer">
-            Done
+          <a id="filter-done" class="block cursor-pointer px-4 py-2 hover:bg-blue-800">
+            Terminees
           </a>
         </nav>
       </div>
 
-      <div class="h-11 px-4 bg-blue-800 flex items-center">
-        <h4><u>Total checklist</u>: <span id="totalCount">00</span></h4>
+      <div class="flex py-2  items-center bg-blue-800 px-4">
+        <h4>Nombre de checklists : <span id="totalCount">aucune</span></h4>
       </div>
     </aside>
 
-    <main class="w-5/6 p-6">
-      <form id="addForm" class="flex space-x-4 mb-6">
-        <input type="text" id="titleInput" placeholder="Title" class="w-1/4 p-2 border rounded" />
-        <input type="text" id="descriptionInput" placeholder="Description" class="w-2/4 p-2 border rounded" />
-        <button type="submit" class="bg-blue-800 text-white px-4 py-2 rounded">Add</button>
+    <main class="flex min-h-0 flex-1 flex-col p-6">
+      <div class="mb-4">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Rechercher une checklist..."
+          class="w-full rounded border p-2"
+        />
+      </div>
+
+      <form id="addForm" class="mb-6 flex items-start space-x-4">
+        <div class="w-1/4">
+          <input type="text" id="titleInput" placeholder="titre checklist..." class="w-full rounded border p-2" />
+          <p id="titleError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div class="w-2/4">
+          <input type="text" id="descriptionInput" placeholder="description..." class="w-full rounded border p-2" />
+          <p id="descriptionError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div class="w-1/4">
+          <input type="date" id="dueDateInput" class="w-full rounded border p-2" />
+        </div>
+        <button type="submit" class="rounded bg-blue-800 px-4 py-2 font-semibold text-white">Ajouter</button>
       </form>
 
-      <p id="noDataMessage" class="text-center text-gray-500">No checklist</p>
-      <table id="dataTable" class="w-full hidden border">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="text-left p-2">Checklist</th>
-            <th class="w-10"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="min-h-0 flex-1 overflow-hidden pr-2">
+        <div id="noDataMessage" class="hidden min-h-[420px] items-center justify-center"></div>
+        <div id="tableScrollArea" class="table-shell hidden">
+          <table class="table-fixed w-full border border-b-0">
+            <colgroup>
+              <col />
+              <col style="width: 4rem;" />
+            </colgroup>
+            <thead>
+              <tr style="background-color: #1E3A8A;">
+                <th class="p-3 text-left text-white text-2xl font-semibold">Mes checklists</th>
+                <th class="w-10"></th>
+              </tr>
+            </thead>
+          </table>
+          <div class="table-scroll-area scrollbar-hidden">
+            <table id="dataTable" class="table-fixed hidden w-full border">
+              <colgroup>
+                <col />
+                <col style="width: 4rem;" />
+              </colgroup>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </main>
+  </div>
+
+  <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
+    <div class="w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl">
+      <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-xl font-semibold text-slate-800">Modifier la checklist</h3>
+        <button id="closeEditModal" type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Fermer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="editForm" class="space-y-4">
+        <div>
+          <label for="editTitleInput" class="mb-1 block text-sm font-medium text-slate-700">Titre</label>
+          <input id="editTitleInput" type="text" class="w-full rounded border p-2" />
+          <p id="editTitleError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div>
+          <label for="editDescriptionInput" class="mb-1 block text-sm font-medium text-slate-700">Description</label>
+          <textarea id="editDescriptionInput" rows="4" class="w-full rounded border p-2"></textarea>
+          <p id="editDescriptionError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div>
+          <label for="editDueDateInput" class="mb-1 block text-sm font-medium text-slate-700">Date d'echeance</label>
+          <input id="editDueDateInput" type="date" class="w-full rounded border p-2" />
+        </div>
+        <div class="flex justify-end gap-3">
+          <button id="cancelEditModal" type="button" class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-100">Annuler</button>
+          <button type="submit" class="rounded bg-blue-800 px-4 py-2 font-semibold text-white">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
+    <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+      <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-xl font-semibold text-slate-800">Supprimer la checklist</h3>
+        <button id="closeDeleteModal" type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Fermer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <p id="deleteModalText" class="text-sm text-slate-600">Confirmer la suppression ?</p>
+      <div class="mt-6 flex justify-end gap-3">
+        <button id="cancelDeleteModal" type="button" class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-100">Annuler</button>
+        <button id="confirmDeleteButton" type="button" class="rounded bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">Supprimer</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/script.js"></script>

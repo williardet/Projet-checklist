@@ -1,46 +1,275 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="../images/checklist.png" type="image/x-icon">
   <title>Checklist Tasks</title>
+  <style>
+    /* Masque la barre de scroll tout en conservant le deplacement au scroll. */
+    .scrollbar-hidden {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* La zone du tableau scrolle sans faire bouger la page principale. */
+    .table-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    /* Le tableau est separe en deux parties pour garder l'en-tete fixe. */
+    .table-shell {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .table-fixed {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    /* Arrondir les coins en haut des tableaux */
+    table thead tr th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    table thead tr th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    /* Style personnalisé pour les select de priorité */
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.5rem center;
+      background-size: 1.5em 1.5em;
+      padding-right: 2.5rem;
+    }
+
+    select:hover {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    select option {
+      background-color: white;
+      color: #1f2937;
+      padding: 0.5rem;
+    }
+
+    select option:checked {
+      background-color: #1e3a8a;
+      color: white;
+    }
+  </style>
 </head>
-<body class="bg-white">
-  <div class="flex h-screen">
-    <!-- Sidebar -->
-    <aside class="w-1/6 bg-blue-900 text-white flex flex-col justify-between shadow-md">
+
+<body class="h-screen overflow-hidden bg-white">
+  <div class="flex h-full overflow-hidden">
+    <aside class="flex h-full w-1/6 shrink-0 flex-col justify-between bg-blue-900 text-white shadow-md">
       <div>
-        <div class="h-14 flex items-center px-4 bg-blue-800 shadow-md">
-          <div class="w-8 h-8 bg-white rounded-lg mr-2"></div>
+        <div class="flex h-14 items-center bg-blue-800 px-4 shadow-md">
+          <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h11"></path>
+            </svg>
+          </div>
           <h2 class="text-xl font-bold">Check-<span class="text-sm">List</span></h2>
         </div>
-        <nav class="mt-4 space-y-2 px-4">
-          <a href="../index.html" class="block">Back to checklists</a>
-        </nav>
+        <div class="mt-6 px-4">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-200">Mes checklists</p>
+          <div id="checklistsNav" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div class="flex h-8 items-center justify-center bg-blue-800">
+        <a href="../index.html" class="text-sm font-semibold uppercase tracking-wide text-white">
+          Retour
+        </a>
       </div>
     </aside>
 
-    <!-- Main content -->
-    <main class="w-5/6 p-6">
-      <form id="addForm" class="flex space-x-4 mb-6">
-        <input type="text" id="titleInput" placeholder="Task title" class="w-1/4 p-2 border rounded" />
-        <input type="text" id="descriptionInput" placeholder="Task description" class="w-2/4 p-2 border rounded" />
-        <button type="submit" class="bg-blue-800 text-white px-4 py-2 rounded">Add</button>
+    <main class="flex min-h-0 flex-1 flex-col p-6">
+      <div class="mb-4">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Rechercher une tache..."
+          class="w-full rounded border p-2"
+        />
+      </div>
+
+      <div class="mb-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          id="filter-all-tasks"
+          class="rounded bg-blue-800 px-4 py-2 text-sm font-semibold text-white"
+        >
+          Toutes
+        </button>
+        <button
+          type="button"
+          id="filter-pending-tasks"
+          class="rounded border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+        >
+          A faire
+        </button>
+        <button
+          type="button"
+          id="filter-done-tasks"
+          class="rounded border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+        >
+          Terminees
+        </button>
+      </div>
+
+      <div class="mb-4 flex flex-wrap gap-2">
+        <span class="text-sm font-semibold text-slate-600 flex items-center">Trier par :</span>
+        <button
+          type="button"
+          id="sort-priority"
+          class="rounded bg-blue-800 px-4 py-2 text-sm font-semibold text-white"
+        >
+          Priorité
+        </button>
+        <button
+          type="button"
+          id="sort-title"
+          class="rounded border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+        >
+          Titre (A-Z)
+        </button>
+        <button
+          type="button"
+          id="sort-progress"
+          class="rounded border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+        >
+          Avancement
+        </button>
+      </div>
+
+      <form id="addForm" class="mb-6 flex items-start space-x-4">
+        <div class="w-1/4">
+          <input type="text" id="titleInput" placeholder="titre tache..." class="w-full rounded border p-2" />
+          <p id="titleError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div class="w-2/4">
+          <input type="text" id="descriptionInput" placeholder="description..." class="w-full rounded border p-2" />
+          <p id="descriptionError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div class="w-1/4">
+          <input type="date" id="dueDateInput" class="w-full rounded border p-2" />
+        </div>
+        <div class="w-1/6">
+          <select id="priorityInput" class="w-full rounded border border-slate-300 p-2 bg-white text-slate-800 font-medium text-sm transition">
+            <option value="basse">Basse</option>
+            <option value="moyenne" selected>Moyenne</option>
+            <option value="haute">Haute</option>
+          </select>
+        </div>
+        <button type="submit" class="rounded bg-blue-800 px-4 py-2 font-semibold text-white">Ajouter</button>
       </form>
 
-      <p id="noDataMessage" class="text-center text-gray-500">No tasks</p>
-      <table id="dataTable" class="w-full hidden border">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="text-left p-2">Tasks</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="min-h-0 flex-1 overflow-hidden pr-2">
+        <div id="noDataMessage" class="hidden min-h-[420px] items-center justify-center"></div>
+        <div id="tableScrollArea" class="table-shell hidden">
+          <table class="table-fixed w-full border border-b-0">
+            <thead>
+              <tr style="background-color: #1E3A8A;">
+                <th id="tasksTableTitle" class="p-3 text-left text-2xl text-white font-semibold">Checklist</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="table-scroll-area scrollbar-hidden">
+            <table id="dataTable" class="table-fixed hidden w-full border">
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </main>
+  </div>
+
+  <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
+    <div class="w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl">
+      <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-xl font-semibold text-slate-800">Modifier la tache</h3>
+        <button id="closeEditModal" type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Fermer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form id="editForm" class="space-y-4">
+        <div>
+          <label for="editTitleInput" class="mb-1 block text-sm font-medium text-slate-700">Titre</label>
+          <input id="editTitleInput" type="text" class="w-full rounded border p-2" />
+          <p id="editTitleError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div>
+          <label for="editDescriptionInput" class="mb-1 block text-sm font-medium text-slate-700">Description</label>
+          <textarea id="editDescriptionInput" rows="4" class="w-full rounded border p-2"></textarea>
+          <p id="editDescriptionError" class="mt-1 hidden text-sm text-red-600"></p>
+        </div>
+        <div>
+          <label for="editDueDateInput" class="mb-1 block text-sm font-medium text-slate-700">Date d'echeance</label>
+          <input id="editDueDateInput" type="date" class="w-full rounded border p-2" />
+        </div>
+        <div>
+          <label for="editPriorityInput" class="mb-1 block text-sm font-medium text-slate-700">Priorité</label>
+          <select id="editPriorityInput" class="w-full rounded border border-slate-300 p-2 bg-white text-slate-800 font-medium text-sm transition">
+            <option value="basse">Basse</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="haute">Haute</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button id="cancelEditModal" type="button" class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-100">Annuler</button>
+          <button type="submit" class="rounded bg-blue-800 px-4 py-2 font-semibold text-white">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
+    <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+      <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-xl font-semibold text-slate-800">Supprimer la tache</h3>
+        <button id="closeDeleteModal" type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Fermer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <p id="deleteModalText" class="text-sm text-slate-600">Confirmer la suppression ?</p>
+      <div class="mt-6 flex justify-end gap-3">
+        <button id="cancelDeleteModal" type="button" class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-100">Annuler</button>
+        <button id="confirmDeleteButton" type="button" class="rounded bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">Supprimer</button>
+      </div>
+    </div>
   </div>
 
   <script src="../js/script2.js"></script>
 </body>
+
 </html>
