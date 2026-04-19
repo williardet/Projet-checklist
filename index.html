@@ -1,202 +1,162 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="shortcut icon" href="images/checklist.png" type="image/x-icon">
-  <title>Checklists</title>
-  <style>
-    .active-link {
-      background-color: rgba(255, 255, 255, 0.15);
-      font-weight: bold;
-    }
-
-    /* Masque la barre de scroll tout en conservant le deplacement au scroll. */
-    .scrollbar-hidden {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-
-    .scrollbar-hidden::-webkit-scrollbar {
-      display: none;
-    }
-
-    /* La zone du tableau scrolle sans faire bouger la page principale. */
-    .table-scroll-area {
-      flex: 1;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
-    /* Le tableau est separe en deux parties pour garder l'en-tete fixe. */
-    .table-shell {
-      display: flex;
-      height: 100%;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .table-fixed {
-      table-layout: fixed;
-      width: 100%;
-    }
-
-    /* Arrondir les coins en haut des tableaux */
-    table thead tr th:first-child {
-      border-top-left-radius: 12px;
-    }
-
-    table thead tr th:last-child {
-      border-top-right-radius: 12px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster</title>
+    <link rel="icon" type="image/x-icon" href="images/checklist.png">
+    <!-- Note: Utilisation du CDN pour le développement. Pour la production, privilégier une compilation PostCSS/Tailwind CLI. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
+<body class="min-h-screen bg-[#f8fbff] dark:bg-gray-900 transition-colors duration-300">
+    <div class="mx-auto max-w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar Aside -->
+            <aside class="w-full lg:w-64 lg:min-h-screen flex-shrink-0 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <nav class="sticky top-4 lg:top-6 p-2 overflow-x-auto lg:overflow-x-visible no-scrollbar">
+                    <button id="newTaskBtn" aria-label="Créer une nouvelle tâche" class="flex items-center justify-center gap-2 w-full mb-2 lg:mb-4 rounded-lg bg-gray-900 dark:bg-white px-4 py-2.5 text-white dark:text-gray-900 hover:opacity-90 transition-all shadow-md flex-shrink-0">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span class="font-medium text-sm">Nouvelle tâche</span>
+                    </button>
 
-<body class="h-screen overflow-hidden bg-white">
-  <div class="flex h-full overflow-hidden">
-    <aside class="flex h-full w-1/6 shrink-0 flex-col justify-between bg-blue-900 text-white shadow-md">
-      <div>
-        <div class="flex h-14 items-center bg-blue-800 px-4 shadow-md">
-          <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <path d="M9 11l3 3L22 4"></path>
-              <path d="M21 12v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h11"></path>
-            </svg>
-          </div>
-          <h2 class="text-xl font-bold">Check-<span class="text-sm">List</span></h2>
-        </div>
+                    <div class="hidden lg:block mb-2 px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Filtres intelligents</div>
+                    
+                    <ul class="flex flex-row lg:flex-col gap-1 no-scrollbar whitespace-nowrap lg:whitespace-normal mb-2">
+                        <li>
+                            <button data-action="setSmartFilter" data-value="all" id="smart-all" aria-label="Toutes les tâches" class="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                </svg>
+                                <span class="font-medium text-sm hidden sm:inline lg:inline">Toutes</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button data-action="setSmartFilter" data-value="today" id="smart-today" aria-label="Tâches d'aujourd'hui" class="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-medium text-sm hidden sm:inline lg:inline">Journée</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button data-action="setSmartFilter" data-value="important" id="smart-important" aria-label="Tâches importantes" class="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                </svg>
+                                <span class="font-medium text-sm hidden sm:inline lg:inline">Important</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button data-action="setSmartFilter" data-value="upcoming" id="smart-upcoming" aria-label="Tâches à venir" class="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="font-medium text-sm hidden sm:inline lg:inline">À venir</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button data-action="setSmartFilter" data-value="overdue" id="smart-overdue" aria-label="Tâches en retard" class="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                                <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-medium text-sm text-red-600 dark:text-red-400 hidden sm:inline lg:inline">Retard</span>
+                            </button>
+                        </li>
+                    </ul>
 
-        <nav class="mt-4 space-y-2 tracking-wide">
-          <a id="filter-all" class="active-link block cursor-pointer px-4 py-2 hover:bg-blue-800">
-            Mes checklists
-          </a>
-          <a id="filter-important" class="block cursor-pointer px-4 py-2 hover:bg-blue-800">
-            Importants
-          </a>
-          <a id="filter-favorite" class="block cursor-pointer px-4 py-2 hover:bg-blue-800">
-            Favoris
-          </a>
-          <a id="filter-done" class="block cursor-pointer px-4 py-2 hover:bg-blue-800">
-            Terminees
-          </a>
-        </nav>
-      </div>
+                    <div class="my-2 border-t border-gray-100 dark:border-gray-700"></div>
+                    <button data-action="toggleSidebarCategories" aria-label="Basculer l'affichage des catégories" class="flex items-center justify-between w-full px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                        <span>Mes Catégories</span>
+                        <svg id="catChevron" class="h-4 w-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <div id="sidebarCategories" class="transition-all duration-300"></div>
 
-      <div class="flex py-2  items-center bg-blue-800 px-4">
-        <h4>Nombre de checklists : <span id="totalCount">aucune</span></h4>
-      </div>
-    </aside>
+                    <div class="hidden lg:block my-2 border-t border-gray-100 dark:border-gray-700"></div>
+                    <div class="hidden lg:block px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Outils</div>
+                    
+                    <button id="darkModeBtn" class="flex items-center gap-3 flex-shrink-0 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <svg id="sunIcon" class="hidden h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <svg id="moonIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                        <span id="themeLabel" class="font-medium text-sm hidden sm:inline lg:inline">Thème</span>
+                    </button>
+                    <button id="trashBtn" class="relative flex items-center gap-3 flex-shrink-0 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <div class="relative">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span id="trashBadge" class="hidden absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white"></span>
+                        </div>
+                        <span class="font-medium text-sm hidden sm:inline lg:inline">Corbeille</span>
+                    </button>
+                    <button id="manageCatsBtn" class="flex items-center gap-3 flex-shrink-0 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M10 7h10M10 11h10M10 15h10"></path>
+                        </svg>
+                        <span class="font-medium text-sm hidden sm:inline lg:inline">Gérer</span>
+                    </button>
+                    <button id="calendarViewBtn" class="flex items-center gap-3 flex-shrink-0 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="font-medium text-sm hidden sm:inline lg:inline">Calendrier</span>
+                    </button>
 
-    <main class="flex min-h-0 flex-1 flex-col p-6">
-      <div class="mb-4">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Rechercher une checklist..."
-          class="w-full rounded border p-2"
-        />
-      </div>
+                    <div class="hidden lg:block my-2 border-t border-gray-100 dark:border-gray-700"></div>
+                    <div class="px-3 py-2">
+                        <a href="mentions-legales.html" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">Mentions Légales</a>
+                    </div>
+                </nav>
+            </aside>
 
-      <form id="addForm" class="mb-6 flex items-start space-x-4">
-        <div class="w-1/4">
-          <input type="text" id="titleInput" placeholder="titre checklist..." class="w-full rounded border p-2" />
-          <p id="titleError" class="mt-1 hidden text-sm text-red-600"></p>
-        </div>
-        <div class="w-2/4">
-          <input type="text" id="descriptionInput" placeholder="description..." class="w-full rounded border p-2" />
-          <p id="descriptionError" class="mt-1 hidden text-sm text-red-600"></p>
-        </div>
-        <div class="w-1/4">
-          <input type="date" id="dueDateInput" class="w-full rounded border p-2" />
-        </div>
-        <button type="submit" class="rounded bg-blue-800 px-4 py-2 font-semibold text-white">Ajouter</button>
-      </form>
+            <!-- Main Content -->
+            <main class="flex-1 min-w-0">
+                <!-- Header -->
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-semibold gradient-text dark:text-white">Mes Tâches</h1>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">Organisez et gérez vos tâches efficacement</p>
+                    </div>
+                </div>
 
-      <div class="min-h-0 flex-1 overflow-hidden pr-2">
-        <div id="noDataMessage" class="hidden min-h-[420px] items-center justify-center"></div>
-        <div id="tableScrollArea" class="table-shell hidden">
-          <table class="table-fixed w-full border border-b-0">
-            <colgroup>
-              <col />
-              <col style="width: 4rem;" />
-            </colgroup>
-            <thead>
-              <tr style="background-color: #1E3A8A;">
-                <th class="p-3 text-left text-white text-2xl font-semibold">Mes checklists</th>
-                <th class="w-10"></th>
-              </tr>
-            </thead>
-          </table>
-          <div class="table-scroll-area scrollbar-hidden">
-            <table id="dataTable" class="table-fixed hidden w-full border">
-              <colgroup>
-                <col />
-                <col style="width: 4rem;" />
-              </colgroup>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+                <!-- Stats Cards -->
+                <div id="statsCards" class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></div>
 
-  <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
-    <div class="w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl">
-      <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-xl font-semibold text-slate-800">Modifier la checklist</h3>
-        <button id="closeEditModal" type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Fermer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M18 6 6 18"></path>
-            <path d="m6 6 12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <form id="editForm" class="space-y-4">
-        <div>
-          <label for="editTitleInput" class="mb-1 block text-sm font-medium text-slate-700">Titre</label>
-          <input id="editTitleInput" type="text" class="w-full rounded border p-2" />
-          <p id="editTitleError" class="mt-1 hidden text-sm text-red-600"></p>
+                <!-- View Containers -->
+                <div id="taskFormContainer" class="hidden mb-6"></div>
+                <div id="categoryManagerContainer" class="hidden mb-6"></div>
+                <div id="calendarContainer" class="hidden mb-6"></div>
+                <div id="trashContainer" class="hidden mb-6"></div>
+
+                <!-- Filter Bar -->
+                <div id="filterBar" class="mb-6 space-y-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-sm"></div>
+
+                <!-- Task List -->
+                <div id="taskList" class="space-y-3"></div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden mt-12 text-center"></div>
+            </main>
         </div>
-        <div>
-          <label for="editDescriptionInput" class="mb-1 block text-sm font-medium text-slate-700">Description</label>
-          <textarea id="editDescriptionInput" rows="4" class="w-full rounded border p-2"></textarea>
-          <p id="editDescriptionError" class="mt-1 hidden text-sm text-red-600"></p>
-        </div>
-        <div>
-          <label for="editDueDateInput" class="mb-1 block text-sm font-medium text-slate-700">Date d'echeance</label>
-          <input id="editDueDateInput" type="date" class="w-full rounded border p-2" />
-        </div>
-        <div class="flex justify-end gap-3">
-          <button id="cancelEditModal" type="button" class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-100">Annuler</button>
-          <button type="submit" class="rounded bg-blue-800 px-4 py-2 font-semibold text-white">Enregistrer</button>
-        </div>
-      </form>
     </div>
-  </div>
 
-  <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 px-4">
-    <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-      <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-xl font-semibold text-slate-800">Supprimer la checklist</h3>
-        <button id="closeDeleteModal" type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Fermer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M18 6 6 18"></path>
-            <path d="m6 6 12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <p id="deleteModalText" class="text-sm text-slate-600">Confirmer la suppression ?</p>
-      <div class="mt-6 flex justify-end gap-3">
-        <button id="cancelDeleteModal" type="button" class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-100">Annuler</button>
-        <button id="confirmDeleteButton" type="button" class="rounded bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">Supprimer</button>
-      </div>
-    </div>
-  </div>
+    <!-- Overlay UI -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="modalContainer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 hidden"></div>
 
-  <script src="js/script.js"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
-
 </html>

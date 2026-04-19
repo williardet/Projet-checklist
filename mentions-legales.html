@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentions Légales - TaskMaster</title>
+    <link rel="icon" type="image/x-icon" href="images/checklist.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body
+    class="min-h-screen bg-[#f8fbff] dark:bg-gray-900 transition-colors duration-300 text-gray-800 dark:text-gray-200">
+    <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+        <!-- Bouton retour -->
+        <a href="index.html"
+            class="inline-flex items-center gap-2 mb-8 text-blue-600 dark:text-blue-400 hover:underline transition-all group">
+            <svg class="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
+            </svg>
+            Retour à l'application
+        </a>
+
+        <h1 class="text-4xl font-bold gradient-text dark:text-white mb-8">Mentions Légales</h1>
+
+        <div
+            class="space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm animate-form-entry">
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">1. Présentation du projet</h2>
+                <p class="leading-relaxed"><strong>TaskMaster</strong> est une application web de démonstration réalisée
+                    dans le cadre d'un portfolio de développeur. Ce projet a pour but de présenter des compétences
+                    techniques en développement JavaScript Vanilla et en intégration CSS moderne.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">2. Éditeur et Propriété</h2>
+                <p class="leading-relaxed">Ce projet est édité et réalisé par : <strong>OVONO Julfab]</strong>.<br>
+                    Le code source et les éléments graphiques associés sont la propriété exclusive de l'auteur, sauf
+                    mention contraire.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">3. Hébergement</h2>
+                <p class="leading-relaxed">L'application est hébergée par : <strong>GitHub Pages</strong>.<br>
+                    Adresse de l'hébergeur : GitHub, Inc.
+                    88 Colin P Kelly Jr St
+                    San Francisco, CA 94107,
+                    USA</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">4. Protection des données</h2>
+                <p class="leading-relaxed">TaskMaster est une application respectueuse de votre vie privée :</p>
+                <ul class="list-disc ml-5 mt-2 space-y-2 opacity-80">
+                    <li>Aucune donnée personnelle n'est collectée ou transmise à des serveurs tiers.</li>
+                    <li>L'ensemble de vos tâches et préférences est stocké exclusivement en local sur votre appareil via
+                        l'API <strong>localStorage</strong> de votre navigateur.</li>
+                    <li>Vous pouvez supprimer l'intégralité de vos données à tout moment en vidant le cache de votre
+                        navigateur.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">5. Responsabilité</h2>
+                <p class="leading-relaxed">L'auteur ne peut être tenu responsable de la perte de données ou d'un
+                    éventuel dysfonctionnement de l'application, celle-ci étant fournie à titre expérimental.</p>
+            </section>
+        </div>
+
+        <footer class="mt-12 text-center text-sm text-gray-500">
+            &copy; 2026 TaskMaster - Conçu avec passion.
+        </footer>
+    </div>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+    </script>
+</body>
+
+</html>
